@@ -81,4 +81,18 @@ impl DataFrame {
             println!("{:?}", row);
         }
     }
+    // Copilot assisted with the following function
+    pub fn get_column(&self, name: &str) -> Option<Vec<String>> {
+        if self.columns.contains(&name.to_string()) {
+            Some (
+                self.rows.iter().map(|row| row.get(name).cloned().unwrap_or_default()).collect()
+            )
+        } else {
+            None
+        }
+    } 
+
+    pub fn get_cell(&self, row_idx: usize, column: &str) ->Option<&String> {
+        self.rows.get(row_idx)?.get(column)
+    }
 }
