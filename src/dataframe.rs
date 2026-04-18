@@ -76,11 +76,17 @@ impl DataFrame {
     }
 
     pub fn head(&self, n: usize) {
-        println!("Columns: {:?}", self.columns);
-        for row in self.rows.iter().take(n) {
-            println!("{:?}", row);
+        println!("Printing the first {n} rows of the DataFrame:");
+        for column in self.columns.iter() {
+            print!("{:?}: ", column);
+            for rown in self.rows.iter().take(n) {
+                print!("{:?}, ", rown.get(column).unwrap_or(&"".to_string()));
+            }
+            println!();
         }
     }
+
+    
     // Copilot assisted with the following function
     pub fn get_column(&self, name: &str) -> Option<Vec<String>> {
         if self.columns.contains(&name.to_string()) {

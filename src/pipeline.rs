@@ -1,6 +1,7 @@
 use crate::dataframe::DataFrame;
 use crossbeam::channel::{self, Receiver, Sender};
 use std::collections::HashMap;
+use std::io::{self, Write};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -51,9 +52,11 @@ impl Pipeline {
         ));
 
         // Print header
-        println!("\n  Concurrent pipeline — {} threads\n", num_threads);
+        println!("\n\x1b[2m────────────────────────────────────────────────────────────\x1b[0m");
+        println!("\x1b[1;32m  Concurrent Pipeline\x1b[0m  \x1b[2m({} worker threads)\x1b[0m", num_threads);
+        println!("\x1b[2m────────────────────────────────────────────────────────────\x1b[0m\n");
         for i in 0..num_threads {
-            println!("  T{i}  [                                        ] 0%");
+            println!("  T{i:02}  [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]   0%     0 rows  queued");
         }
 
         let log_printer = log.clone();
@@ -67,6 +70,7 @@ impl Pipeline {
 
                 // Move cursor up N lines to overwrite
                 print!("\x1B[{}A", num_threads);
+                let _ = io::stdout().flush();
 
                 for e in &events {
                     let pct = if e.chunk_size == 0 {
@@ -74,17 +78,33 @@ impl Pipeline {
                     } else {
                         (e.rows_done * 100) / e.chunk_size
                     };
-                    let filled = pct * 40 / 100;
-                    let bar: String = (0..40)
-                        .map(|i| if i < filled { '#' } else { ' ' })
+                    let filled = pct * 30 / 100;
+                    let bar: String = (0..30)
+                        .map(|i| if i < filled { '█' } else { '░' })
                         .collect();
                     let elapsed = start.elapsed().as_millis();
-                    let status = if e.finished { "done" } else { "working" };
+                    let status = if e.finished {
+                        "\x1b[1;32mdone\x1b[0m"
+                    } else {
+                        "\x1b[1;33mworking\x1b[0m"
+                    };
+                    let pct_color = if pct >= 100 {
+                        "\x1b[1;32m"
+                    } else if pct >= 50 {
+                        "\x1b[1;36m"
+                    } else {
+                        "\x1b[1;34m"
+                    };
+                    // Clear the current terminal line before rewriting it so shorter
+                    // status text (for example, "done") does not leave leftovers.
+                    print!("\x1b[2K\r");
                     println!(
-                        "  T{}  [{}] {:3}%  {:>7} rows  {:>5}ms  {}",
-                        e.thread_id, bar, pct, e.rows_done, elapsed, status
+                        "  T{:02}  [{}]  {}{:>3}%\x1b[0m  {:>6} rows  {:>5}ms  {}",
+                        e.thread_id, bar, pct_color, pct, e.rows_done, elapsed, status
                     );
                 }
+
+                let _ = io::stdout().flush();
 
                 if all_done {
                     break;
@@ -104,7 +124,7 @@ impl Pipeline {
             let handle = thread::spawn(move || {
                 for (i, row) in chunk.into_iter().enumerate() {
                     // Artificial delay
-                    thread::sleep(Duration::from_millis(2)); // adjust this
+                    thread::sleep(Duration::from_millis(25)); // adjust this
 
                     if let Some(processed) = process_fn(row) {
                         tx.send(processed).expect("Failed to send row");
@@ -133,7 +153,7 @@ impl Pipeline {
 
         printer.join().expect("Printer thread panicked");
 
-        println!("\n  All threads done in {}ms\n", start.elapsed().as_millis());
+        println!("\n\x1b[1;32m  All threads complete\x1b[0m in \x1b[1m{}ms\x1b[0m\n", start.elapsed().as_millis());
 
         let rows = rx.iter().collect();
         let mut updated_df = self.df.clone();
