@@ -1,11 +1,14 @@
 use std::collections::HashMap;
+//These functions were originally written by Copilot, and were then translated into code I could better understand/explain.
 
 // Convert height from cm to inches
 pub fn pipeline_height_to_inches(mut row: HashMap<String, String>) -> Option<HashMap<String, String>> {
     if let Some(value) = row.get_mut("height") {
         let height: f64 = value.parse::<f64>().expect("Failed to parse number");
-        let height: f64 = height * 0.393701;
-        *value = height.to_string();
+        let height: f64 = height * 0.393701; //Variable shadowing
+        *value = format!("{:.2}", height)//* is necessary because value is a mutable reference
+    } else {
+        return None;
     }
     Some(row)
 }
@@ -15,7 +18,9 @@ pub fn pipeline_weight_to_kg(mut row: HashMap<String, String>) -> Option<HashMap
     if let Some(value) = row.get_mut("weight") {
         let weight: f64 = value.parse::<f64>().expect("Failed to parse number");
         let weight: f64 = weight * 0.453582;
-        *value = weight.to_string();
+        *value = format!("{:.2}", weight);
+    } else {
+        return None;
     }
     Some(row)
 }
@@ -23,8 +28,10 @@ pub fn pipeline_weight_to_kg(mut row: HashMap<String, String>) -> Option<HashMap
 // Remove timestamp from birthday column
 pub fn pipeline_remove_birthday_timestamp(mut row: HashMap<String, String>) -> Option<HashMap<String, String>> {
     if let Some(value) = row.get_mut("birthday") {
-           let data = value.split(' ').next().unwrap_or("");
-            *value = data.to_string();
+            let date = value.split(' ').next().unwrap_or(""); //Nect takes the first item from the iterator created by .split(' ')
+            *value = date.to_string();
+    } else {
+        return None;
     }
     Some(row)
 } 

@@ -127,7 +127,7 @@ impl Pipeline {
                     thread::sleep(Duration::from_millis(25)); // adjust this
 
                     if let Some(processed) = process_fn(row) {
-                        tx.send(processed).expect("Failed to send row");
+                        tx.send(processed).expect("Failed to send row"); //Panic it the row failed to process 
                     }
 
                     let report_every = (chunk_len / 20).max(1);

@@ -61,8 +61,8 @@ impl DataFrame {
     {
         let rows = self.rows
             .iter()
-            .filter(|row| predicate(row))
-            .cloned()
+            .filter(|row| predicate(row)) //Keeps only rows where predicate returns true
+            .cloned() //Clones the result
             .collect();
 
         DataFrame {

@@ -31,7 +31,7 @@ fn main() {
     // Filter example  
     println!("\n\x1b[1;36mBefore filter:\x1b[0m {:?} rows", df.shape().0);
 
-    let filtered = df.filter(filter_name); 
+    let filtered = df.filter(filter_weight); 
 
     println!("\x1b[1;36mAfter filter:\x1b[0m {:?} rows", filtered.shape().0);
 
@@ -71,8 +71,8 @@ fn main() {
     let results = pipeline.run(500, pipeline_height_to_inches); // Run the pipeline with a chunk size of 500 and a transformation function that converts height from cm to inches.
     let pipeline = Pipeline::new(results);
     let results = pipeline.run(500, pipeline_weight_to_kg); // Run the pipeline with a chunk size of 500 and a transformation function that converts weight from lbs to kg.
-    //println!("Pipeline output: {} rows", results.shape().0);
-    //results.head(5); // Print first 5 rows of results 
+    // This line is comented out because it will cause a compile time error. 
+    // This error is useful for demonstrating how ownership works in Rust, so the line is left here for demonstration purposes. 
     //filtered.head(5); //This won't work because the pipeline takes ownership of the df.  
     
     //Return the heights after running the pipeline
@@ -99,13 +99,3 @@ fn main() {
 
 
 
-
-//for multiple files used claude
-/*
-
-let paths = vec!["data1.csv", "data2.csv", "data3.csv"];
-let df = paths.iter()
-    .map(|p| DataFrame::read_csv(p).expect("Failed to read"))
-    .reduce(|mut a, b| { a.rows.extend(b.rows); a })
-    .unwrap();
-*/
