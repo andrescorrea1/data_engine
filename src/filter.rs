@@ -32,7 +32,7 @@ pub fn filter_weight(row: &HashMap<String, String>) -> bool {
     }
 }
 
-// Remove rows where the player's first name doesn't starts with "A"
+// Remove rows where the player's first name doesn't start with "A"
 pub fn filter_name(row: &HashMap<String, String>) -> bool {
     let name = row.get("player_name");
     if let Some(n) = name {
@@ -43,5 +43,17 @@ pub fn filter_name(row: &HashMap<String, String>) -> bool {
         }
     } else {
         panic!("Unable to get name value");
+    }
+}
+
+// Keep only players born after 1990
+pub fn filter_birth_year(row: &HashMap<String, String>) -> bool {
+    let birthday = row.get("birthday");
+    if let Some(b) = birthday {
+        // Birthday format is "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
+        let year: i32 = b[..4].parse::<i32>().expect("Unable to parse birth year");
+        year > 1990
+    } else {
+        panic!("Unable to get birthday value");
     }
 }
