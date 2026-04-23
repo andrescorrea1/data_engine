@@ -30,43 +30,69 @@ fn main() {
     println!("\x1b[1;36mAfter removing empty rows:\x1b[0m {:?}", df.shape().0);
 
     // Filter selection
-    println!("\n\x1b[1;35mSelect a filter to apply:\x1b[0m");
-    println!("  \x1b[1;36m1.\x1b[0m Filter by weight    (keep rows where weight > 160.0)");
-    println!("  \x1b[1;36m2.\x1b[0m Filter by height    (keep rows where height > 180.0)");
-    println!("  \x1b[1;36m3.\x1b[0m Filter by name      (remove rows where player name starts with 'A')");
-    println!("  \x1b[1;36m4.\x1b[0m Filter by birth year (keep players born after 1990)");
-    print!("\nEnter choice (1/2/3/4): ");
-    io::stdout().flush().unwrap();
+    let mut filtered = df;
 
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
+    loop {
+        println!("\n\x1b[1;35mSelect a filter to apply (or 0 to finish):\x1b[0m");
+        println!("  \x1b[1;36m1.\x1b[0m Filter by weight");
+        println!("  \x1b[1;36m2.\x1b[0m Filter by height");
+        println!("  \x1b[1;36m3.\x1b[0m Filter by name");
+        println!("  \x1b[1;36m4.\x1b[0m Filter by birth year");
+        println!("  \x1b[1;36m0.\x1b[0m Done filtering");
 
-    println!("\n\x1b[1;36mBefore filter:\x1b[0m {:?} rows", df.shape().0);
+        print!("Enter choice: ");
+        io::stdout().flush().unwrap();
 
-    let filtered = match input.trim() {
-        "1" => {
-            println!("\x1b[2mApplying: filter_weight\x1b[0m");
-            df.filter(filter_weight)
-        }
-        "2" => {
-            println!("\x1b[2mApplying: filter_height\x1b[0m");
-            df.filter(filter_height)
-        }
-        "3" => {
-            println!("\x1b[2mApplying: filter_name\x1b[0m");
-            df.filter(filter_name)
-        }
-        "4" => {
-            println!("\x1b[2mApplying: filter_birth_year\x1b[0m");
-            df.filter(filter_birth_year)
-        }
-        _ => {
-            println!("\x1b[1;33mInvalid choice, defaulting to filter_weight.\x1b[0m");
-            df.filter(filter_weight)
-        }
-    };
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
 
-    println!("\x1b[1;36mAfter filter:\x1b[0m {:?} rows", filtered.shape().0);
+        match input.trim() {
+            "1" => {
+                print!("Enter minimum weight: ");
+                io::stdout().flush().unwrap();
+                let mut val = String::new();
+                io::stdin().read_line(&mut val).unwrap();
+                let min_weight: f64 = val.trim().parse().unwrap_or(0.0);
+
+                filtered = filtered.filter(filter_weight(min_weight));
+            }
+            "2" => {
+                print!("Enter minimum height: ");
+                io::stdout().flush().unwrap();
+                let mut val = String::new();
+                io::stdin().read_line(&mut val).unwrap();
+                let min_height: f64 = val.trim().parse().unwrap_or(0.0);
+
+                filtered = filtered.filter(filter_height(min_height));
+            }
+            "3" => {
+                print!("Enter starting letter to EXCLUDE: ");
+                io::stdout().flush().unwrap();
+                let mut val = String::new();
+                io::stdin().read_line(&mut val).unwrap();
+
+                filtered = filtered.filter(filter_name(val.trim().to_string()));
+            }
+            "4" => {
+                print!("Enter minimum birth year: ");
+                io::stdout().flush().unwrap();
+                let mut val = String::new();
+                io::stdin().read_line(&mut val).unwrap();
+                let year: i32 = val.trim().parse().unwrap_or(0);
+
+                filtered = filtered.filter(filter_birth_year(year));
+            }
+            "0" => {
+                println!("\x1b[1;32mDone applying filters.\x1b[0m");
+                break;
+            }
+            _ => {
+                println!("\x1b[1;33mInvalid choice, try again.\x1b[0m");
+            }
+        }
+
+        println!("\x1b[1;36mCurrent rows:\x1b[0m {:?}", filtered.shape().0);
+    }
 
     /* Pipeline execution:
         - Run the concurrent pipeline on the filtered DataFrame.

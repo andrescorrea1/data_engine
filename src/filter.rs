@@ -1,59 +1,48 @@
 use std::collections::HashMap;
 //These functions were originally written by Copilot, and were then translated into code I could better understand/explain.
 
-// Remove rows where height <= 180.0
-pub fn filter_height(row: &HashMap<String, String>) -> bool {
-    let mut height = row.get("height");
-    if let Some(h) = height {
-        let h: f64 = h.parse::<f64>().expect("Unable to convert height to floating point");
-        if h > 180.0 {
-                true 
-        } else {
-            false
+// Height filter with user-defined threshold
+pub fn filter_height(min_height: f64) -> impl Fn(&HashMap<String, String>) -> bool {
+    move |row| {
+        if let Some(h) = row.get("height") {
+            if let Ok(h) = h.parse::<f64>() {
+                return h > min_height;
+            }
         }
-    } else {
-        panic!("Unable to get height value")
-    }
-    
-}
-
-// Remove rows where weight <= 160.0
-pub fn filter_weight(row: &HashMap<String, String>) -> bool {
-    let mut weight = row.get("weight");
-    if let Some(w) = weight {
-        let w = w.parse::<f64>().expect("Unable to convert height to floating point");
-        if w > 160.0 {
-            true
-        } else {
-            false
-        }
-    } else {
-        panic!("Unable to get weight value");
+        false
     }
 }
 
-// Remove rows where the player's first name doesn't start with "A"
-pub fn filter_name(row: &HashMap<String, String>) -> bool {
-    let name = row.get("player_name");
-    if let Some(n) = name {
-        if n.starts_with("A") {
-            false
-        } else {
-            true
+// Weight filter with user-defined threshold
+pub fn filter_weight(min_weight: f64) -> impl Fn(&HashMap<String, String>) -> bool {
+    move |row| {
+        if let Some(w) = row.get("weight") {
+            if let Ok(w) = w.parse::<f64>() {
+                return w > min_weight;
+            }
         }
-    } else {
-        panic!("Unable to get name value");
+        false
     }
 }
 
-// Keep only players born after 1990
-pub fn filter_birth_year(row: &HashMap<String, String>) -> bool {
-    let birthday = row.get("birthday");
-    if let Some(b) = birthday {
-        // Birthday format is "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
-        let year: i32 = b[..4].parse::<i32>().expect("Unable to parse birth year");
-        year > 1990
-    } else {
-        panic!("Unable to get birthday value");
+// Name filter with user-defined starting letter
+pub fn filter_name(starts_with: String) -> impl Fn(&HashMap<String, String>) -> bool {
+    move |row| {
+        if let Some(name) = row.get("player_name") {
+            return !name.starts_with(&starts_with);
+        }
+        false
+    }
+}
+
+// Birth year filter with user-defined cutoff
+pub fn filter_birth_year(min_year: i32) -> impl Fn(&HashMap<String, String>) -> bool {
+    move |row| {
+        if let Some(b) = row.get("birthday") {
+            if let Ok(year) = b[..4].parse::<i32>() {
+                return year > min_year;
+            }
+        }
+        false
     }
 }
