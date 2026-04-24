@@ -1,0 +1,8 @@
+August 23, 2026 updates:
+
+main.rs - There is a loop added where the filter seciton used to be 
+just a choice (satrting at line 35)
+
+filter.rs - The filter now takes a number in to decide which one it
+is and then another number to let the user choose the height,
+weight, etc. that they are filtering on. 
